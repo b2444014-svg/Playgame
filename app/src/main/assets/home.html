@@ -66,20 +66,18 @@
   .empty .ic{font-size:42px;margin-bottom:12px}
   .empty p{font-size:14px;line-height:1.5}
 
-  /* kotak informasi / notif di bawah */
-  .info{display:none;margin-top:26px;padding:16px 18px;border-radius:16px;
-    background:var(--card);border:1px solid var(--line);backdrop-filter:blur(8px);
-    box-shadow:0 0 24px rgba(124,58,237,.15)}
-  .info.show{display:block}
-  .info h3{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
-    color:var(--muted);margin-bottom:10px}
-  .info .it{display:flex;align-items:flex-start;gap:11px;padding:6px 0;
-    font-size:14px;line-height:1.5;color:var(--txt)}
-  .info .dot{flex:none;width:9px;height:9px;border-radius:50%;margin-top:6px;background:#38bdf8;
-    box-shadow:0 0 8px currentColor}
-  .info .dot.success{background:#22c55e}
-  .info .dot.warning{background:#fbbf24}
-  .info .dot.info{background:#38bdf8}
+  /* box event & pesan di bawah */
+  .ibox{display:none;margin-top:16px;padding:16px 18px;border-radius:16px;
+    background:var(--card);border:1px solid var(--line);backdrop-filter:blur(8px)}
+  .ibox.show{display:block}
+  .ibox .htitle{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:800;
+    letter-spacing:.5px;text-transform:uppercase;margin-bottom:9px}
+  .ibox .htitle .ic{font-size:18px}
+  .ibox .body{font-size:14px;line-height:1.55;color:var(--txt);white-space:pre-wrap}
+  .ibox.event{box-shadow:0 0 24px rgba(251,191,36,.15)}
+  .ibox.event .htitle{color:#fbbf24}
+  .ibox.msg{box-shadow:0 0 24px rgba(56,189,248,.15)}
+  .ibox.msg .htitle{color:#38bdf8}
 </style>
 </head>
 <body>
@@ -92,7 +90,8 @@
 
     <div class="btns" id="btns"></div>
 
-    <div class="info" id="info"></div>
+    <div class="ibox event" id="boxEvent"></div>
+    <div class="ibox msg" id="boxMessage"></div>
   </div>
 
 <script>
@@ -152,26 +151,26 @@
     }).join('');
   }
 
-  /* ambil notif/info live dari internet (file info.json) */
+  /* ambil isi box Event & Pesan live dari panel admin */
   function loadInfo(){
     if(!INFO_URL) return;
-    var box=document.getElementById('info');
     var url=INFO_URL + (INFO_URL.indexOf('?')>=0 ? '&' : '?') + 't=' + Date.now();
     fetch(url, {cache:'no-store'})
       .then(function(r){ return r.json(); })
       .then(function(data){
-        if(!data || data.show===false) return;
-        var items = data.items || [];
-        if(!items.length) return;
-        var html = data.title ? '<h3>'+esc(data.title)+'</h3>' : '';
-        html += items.map(function(it){
-          var type = (it.type==='success'||it.type==='warning') ? it.type : 'info';
-          return '<div class="it"><span class="dot '+type+'"></span><span>'+esc(it.text||'')+'</span></div>';
-        }).join('');
-        box.innerHTML = html;
-        box.className = 'info show';
+        if(!data) return;
+        renderBox('boxEvent', '🎉', 'Event Terbaru', data.event);
+        renderBox('boxMessage', '📢', 'Pengumuman', data.message);
       })
-      .catch(function(){ /* offline / gagal ambil — diamkan saja, kotak tidak muncul */ });
+      .catch(function(){ /* offline / gagal — diamkan saja */ });
+  }
+  function renderBox(id, icon, defTitle, d){
+    if(!d || d.show===false || !d.text) return;
+    var box=document.getElementById(id);
+    var title = d.title || defTitle;
+    box.innerHTML = '<div class="htitle"><span class="ic">'+icon+'</span>'+esc(title)+'</div>'+
+                    '<div class="body">'+esc(d.text)+'</div>';
+    box.classList.add('show');
   }
 
   applyTheme();
