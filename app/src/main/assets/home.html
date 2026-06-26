@@ -44,23 +44,31 @@
 
   /* daftar tombol */
   .btns{display:flex;flex-direction:column;gap:16px}
-  .btn{position:relative;display:flex;align-items:center;gap:14px;width:100%;height:66px;padding:0 20px;
-    border:3px solid rgba(255,255,255,.92);border-radius:33px;color:#fff;cursor:pointer;overflow:hidden;
-    font-weight:800;font-size:17px;letter-spacing:.3px;
-    box-shadow:0 9px 22px rgba(0,0,0,.40), inset 0 2px 0 rgba(255,255,255,.5), inset 0 -7px 16px rgba(0,0,0,.20);
-    transition:transform .12s ease, box-shadow .12s ease}
-  .btn::after{content:"";position:absolute;left:6px;right:6px;top:4px;height:42%;pointer-events:none;
-    background:linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,0));
-    border-radius:30px 30px 60% 60%/30px 30px 26px 26px}
-  .btn:active{transform:scale(.975);
-    box-shadow:0 4px 11px rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.45), inset 0 -5px 12px rgba(0,0,0,.22)}
+  /* tombol: bingkai dengan cahaya emas berjalan + wajah dark elegan */
+  .btn{position:relative;width:100%;border-radius:34px;padding:2.5px;cursor:pointer;overflow:hidden;
+    background:#1c1a14;box-shadow:0 9px 24px rgba(0,0,0,.5);
+    transition:transform .12s ease}
+  .btn::before{content:"";position:absolute;z-index:0;top:50%;left:50%;width:700px;height:700px;
+    transform:translate(-50%,-50%);
+    background:conic-gradient(from 0deg,
+      rgba(255,200,60,0) 0deg, rgba(255,200,60,0) 215deg,
+      #f5c542 290deg, #fff4c2 330deg, #f5c542 360deg);
+    animation:spin 3.2s linear infinite}
+  .btn:active{transform:scale(.975)}
+  .face{position:relative;z-index:1;display:flex;align-items:center;gap:14px;width:100%;height:64px;
+    padding:0 20px;border-radius:32px;color:#fff;font-weight:800;font-size:17px;letter-spacing:.3px;overflow:hidden}
+  .face::after{content:"";position:absolute;left:0;right:0;top:0;height:46%;pointer-events:none;
+    background:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,0));border-radius:32px 32px 50% 50%/32px 32px 24px 24px}
+  @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
   .btn .ic{position:relative;z-index:1;width:42px;height:42px;flex:none;border-radius:50%;
-    background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.65);
+    background:rgba(255,255,255,.12);border:2px solid rgba(245,197,66,.55);
     background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;
-    font-size:18px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+    font-size:18px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45)}
   .btn .nm{position:relative;z-index:1;flex:1;text-align:center;line-height:1.15;
-    text-shadow:0 1px 3px rgba(0,0,0,.35)}
-  .btn .arr{position:relative;z-index:1;flex:none;font-size:22px;opacity:.9;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+    text-shadow:0 1px 4px rgba(0,0,0,.6)}
+  .btn .arr{position:relative;z-index:1;flex:none;font-size:22px;color:#f5c542;opacity:.95;
+    text-shadow:0 1px 3px rgba(0,0,0,.5)}
+
 
   .empty{text-align:center;color:var(--muted);padding:50px 20px}
   .empty .ic{font-size:42px;margin-bottom:12px}
@@ -85,7 +93,7 @@
   <div class="wrap">
     <div class="logo">
       <div class="badge" id="logoBadge"><span class="gp">🎮</span><h1 id="appName">TOP UP GAME</h1></div>
-      <div class="tagline">Pilih game-mu, lalu <b>LOGIN</b> dan menangkan maxwin hari ini ⚡</div>
+      <div class="tagline">Pilih game-mu, lalu <b>tap</b> untuk top up instan ⚡</div>
     </div>
 
     <div class="btns" id="btns"></div>
@@ -101,11 +109,14 @@
   var APP_NAME = window.APP_NAME || 'TOP UP GAME';
   var INFO_URL = window.INFO_URL || '';
 
-  /* warna tiap tombol (otomatis bergiliran) — biru, oranye, toska, ungu, pink, hijau, merah, cyan */
+  /* warna dasar tiap tombol (dark elegan, bergiliran) — 1:hitam-abu, 2:ungu-hitam, dst */
   var COLORS = [
-    ['#36a3f7','#1565c0'], ['#ffb02e','#f57c00'], ['#1abc9c','#0e8a72'],
-    ['#9b5cf6','#6d28d9'], ['#f472b6','#be185d'], ['#34d399','#15803d'],
-    ['#fb7185','#be123c'], ['#22d3ee','#0e7490']
+    ['#3a3a42','#101014'],
+    ['#7a1f9e','#160620'],
+    ['#1e3a5f','#08111c'],
+    ['#5f1e2e','#1c0810'],
+    ['#1e5f4a','#08160f'],
+    ['#574310','#16100a']
   ];
 
   function esc(t){ return (t||'').replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}); }
@@ -144,10 +155,12 @@
     box.innerHTML = SITES.map(function(s,i){
       var col = COLORS[i % COLORS.length];
       var grad = 'background:linear-gradient(180deg,'+col[0]+','+col[1]+')';
-      return '<div class="btn" style="'+grad+'" onclick="openSite(SITES['+i+'])">'+
-        iconHTML(s)+
-        '<div class="nm">'+esc(s.name)+'</div>'+
-        '<div class="arr">›</div></div>';
+      return '<div class="btn" onclick="openSite(SITES['+i+'])">'+
+        '<div class="face" style="'+grad+'">'+
+          iconHTML(s)+
+          '<div class="nm">'+esc(s.name)+'</div>'+
+          '<div class="arr">›</div>'+
+        '</div></div>';
     }).join('');
   }
 
