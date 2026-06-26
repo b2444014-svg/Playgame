@@ -3,14 +3,12 @@
    (kosongkan dengan "" jika mau pakai tampilan default)
    ======================================================= */
 
-window.LOGO_URL = "https://i.ibb.co/MkGJjGGX/LOGO.jpg";   // contoh: "https://i.ibb.co/xxxxxxx/logo.png"
-window.BG_URL   = "https://i.ibb.co/84njQfqj/BG.jpg";   // contoh: "https://i.ibb.co/xxxxxxx/background.jpg"
-window.APP_NAME = "PLAY GAME";   // dipakai hanya jika LOGO_URL kosong
+window.LOGO_URL = "https://i.ibb.co/MkGJjGGX/LOGO.jpg";
+window.BG_URL   = "https://i.ibb.co/84njQfqj/BG.jpg";
+window.APP_NAME = "PLAY GAME";
 
-/* Link file info.json untuk notif/info LIVE (raw GitHub).
-   Kosongkan "" untuk mematikan kotak info.
-   Contoh: "https://raw.githubusercontent.com/NAMA-ANDA/NAMA-REPO/main/info.json" */
-window.INFO_URL = "";
+/* Link Box Event & Pesan (live dari panel admin Worker) */
+window.INFO_URL = "https://playgame-notif.b2444014.workers.dev/info";
 
 
 /* =======================================================
@@ -38,3 +36,4 @@ window.SITES = [
   }
   // Tambahkan game lain di sini, pisahkan dengan koma ( , )
 ];
+
