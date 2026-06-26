@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>Top Up Game</title>
+<script src="sites.js"></script>
+<style>
+  :root{
+    --bg:#06060f; --c1:#7c3aed; --c2:#06b6d4; --c3:#f43f5e; --lime:#a3e635;
+    --txt:#f5f5ff; --muted:#8b8ba7; --gold:#fbbf24;
+    --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--txt);
+    overflow-x:hidden; position:relative; min-height:100vh;
+    padding:max(26px,env(safe-area-inset-top)) 18px 40px;
+  }
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(124,58,237,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.06) 1px,transparent 1px);
+    background-size:34px 34px;mask-image:radial-gradient(circle at 50% 30%,#000,transparent 80%)}
+  .blob{position:fixed;border-radius:50%;filter:blur(72px);opacity:.5;z-index:0;pointer-events:none}
+  .b1{width:300px;height:300px;background:var(--c1);top:-100px;left:-70px;animation:f1 14s ease-in-out infinite}
+  .b2{width:280px;height:280px;background:var(--c2);bottom:30px;right:-90px;animation:f2 16s ease-in-out infinite}
+  .b3{width:220px;height:220px;background:var(--c3);top:36%;left:55%;animation:f3 12s ease-in-out infinite}
+  @keyframes f1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
+  @keyframes f2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-40px)}}
+  @keyframes f3{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-40%,30px)}}
+
+  .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto}
+  .logo{text-align:center;margin:14px 0 18px}
+  .logo .badge{display:inline-flex;align-items:center;gap:9px;padding:9px 18px;border-radius:14px;
+    background:var(--card);border:1px solid var(--line);backdrop-filter:blur(10px);
+    box-shadow:0 0 30px rgba(124,58,237,.25)}
+  .logo .badge img{height:46px;width:auto;display:block;border-radius:10px}
+  .logo .gp{font-size:18px;filter:drop-shadow(0 0 8px var(--c2))}
+  .logo h1{font-size:16px;font-weight:800;letter-spacing:1.5px;
+    background:linear-gradient(90deg,var(--c2),var(--lime));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .tagline{text-align:center;color:var(--muted);font-size:13px;margin:12px 0 26px}
+  .tagline b{color:var(--txt)}
+
+  /* daftar tombol */
+  .btns{display:flex;flex-direction:column;gap:16px}
+  .btn{position:relative;display:flex;align-items:center;gap:14px;width:100%;height:66px;padding:0 20px;
+    border:3px solid rgba(255,255,255,.92);border-radius:33px;color:#fff;cursor:pointer;overflow:hidden;
+    font-weight:800;font-size:17px;letter-spacing:.3px;
+    box-shadow:0 9px 22px rgba(0,0,0,.40), inset 0 2px 0 rgba(255,255,255,.5), inset 0 -7px 16px rgba(0,0,0,.20);
+    transition:transform .12s ease, box-shadow .12s ease}
+  .btn::after{content:"";position:absolute;left:6px;right:6px;top:4px;height:42%;pointer-events:none;
+    background:linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,0));
+    border-radius:30px 30px 60% 60%/30px 30px 26px 26px}
+  .btn:active{transform:scale(.975);
+    box-shadow:0 4px 11px rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.45), inset 0 -5px 12px rgba(0,0,0,.22)}
+  .btn .ic{position:relative;z-index:1;width:42px;height:42px;flex:none;border-radius:50%;
+    background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.65);
+    background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;
+    font-size:18px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+  .btn .nm{position:relative;z-index:1;flex:1;text-align:center;line-height:1.15;
+    text-shadow:0 1px 3px rgba(0,0,0,.35)}
+  .btn .arr{position:relative;z-index:1;flex:none;font-size:22px;opacity:.9;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+
+  .empty{text-align:center;color:var(--muted);padding:50px 20px}
+  .empty .ic{font-size:42px;margin-bottom:12px}
+  .empty p{font-size:14px;line-height:1.5}
+
+  /* kotak informasi / notif di bawah */
+  .info{display:none;margin-top:26px;padding:16px 18px;border-radius:16px;
+    background:var(--card);border:1px solid var(--line);backdrop-filter:blur(8px);
+    box-shadow:0 0 24px rgba(124,58,237,.15)}
+  .info.show{display:block}
+  .info h3{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+    color:var(--muted);margin-bottom:10px}
+  .info .it{display:flex;align-items:flex-start;gap:11px;padding:6px 0;
+    font-size:14px;line-height:1.5;color:var(--txt)}
+  .info .dot{flex:none;width:9px;height:9px;border-radius:50%;margin-top:6px;background:#38bdf8;
+    box-shadow:0 0 8px currentColor}
+  .info .dot.success{background:#22c55e}
+  .info .dot.warning{background:#fbbf24}
+  .info .dot.info{background:#38bdf8}
+</style>
+</head>
+<body>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="wrap">
+    <div class="logo">
+      <div class="badge" id="logoBadge"><span class="gp">🎮</span><h1 id="appName">TOP UP GAME</h1></div>
+      <div class="tagline">Pilih game-mu, lalu <b>tap</b> untuk top up instan ⚡</div>
+    </div>
+
+    <div class="btns" id="btns"></div>
+
+    <div class="info" id="info"></div>
+  </div>
+
+<script>
+  var SITES = window.SITES || [];
+  var LOGO_URL = window.LOGO_URL || '';
+  var BG_URL   = window.BG_URL   || '';
+  var APP_NAME = window.APP_NAME || 'TOP UP GAME';
+  var INFO_URL = window.INFO_URL || '';
+
+  /* warna tiap tombol (otomatis bergiliran) — biru, oranye, toska, ungu, pink, hijau, merah, cyan */
+  var COLORS = [
+    ['#36a3f7','#1565c0'], ['#ffb02e','#f57c00'], ['#1abc9c','#0e8a72'],
+    ['#9b5cf6','#6d28d9'], ['#f472b6','#be185d'], ['#34d399','#15803d'],
+    ['#fb7185','#be123c'], ['#22d3ee','#0e7490']
+  ];
+
+  function esc(t){ return (t||'').replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}); }
+
+  function applyTheme(){
+    if(BG_URL){
+      document.body.style.backgroundImage = "linear-gradient(rgba(6,6,15,.88),rgba(6,6,15,.88)), url('"+BG_URL+"')";
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      document.body.style.backgroundAttachment = "fixed";
+      document.body.style.backgroundRepeat = "no-repeat";
+      document.body.style.backgroundColor = "#06060f";
+    }
+    var badge=document.getElementById('logoBadge');
+    if(LOGO_URL){ badge.innerHTML = '<img src="'+LOGO_URL+'" alt="logo">'; }
+    else { badge.innerHTML = '<span class="gp">🎮</span><h1>'+esc(APP_NAME)+'</h1>'; }
+  }
+
+  function openSite(s){
+    if(window.AndroidApp && AndroidApp.open){ AndroidApp.open(s.url); }
+    else { location.href = s.url; }
+  }
+
+  function iconHTML(s){
+    if(s.image) return '<div class="ic" style="background-image:url(\''+s.image+'\')"></div>';
+    var ch=(s.name.trim()[0]||'?').toUpperCase();
+    return '<div class="ic">'+ch+'</div>';
+  }
+
+  function render(){
+    var box=document.getElementById('btns');
+    if(!SITES.length){
+      box.innerHTML='<div class="empty"><div class="ic">🕹️</div><p>Belum ada game.<br>Tambahkan di file <b>sites.js</b></p></div>';
+      return;
+    }
+    box.innerHTML = SITES.map(function(s,i){
+      var col = COLORS[i % COLORS.length];
+      var grad = 'background:linear-gradient(180deg,'+col[0]+','+col[1]+')';
+      return '<div class="btn" style="'+grad+'" onclick="openSite(SITES['+i+'])">'+
+        iconHTML(s)+
+        '<div class="nm">'+esc(s.name)+'</div>'+
+        '<div class="arr">›</div></div>';
+    }).join('');
+  }
+
+  /* ambil notif/info live dari internet (file info.json) */
+  function loadInfo(){
+    if(!INFO_URL) return;
+    var box=document.getElementById('info');
+    var url=INFO_URL + (INFO_URL.indexOf('?')>=0 ? '&' : '?') + 't=' + Date.now();
+    fetch(url, {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(!data || data.show===false) return;
+        var items = data.items || [];
+        if(!items.length) return;
+        var html = data.title ? '<h3>'+esc(data.title)+'</h3>' : '';
+        html += items.map(function(it){
+          var type = (it.type==='success'||it.type==='warning') ? it.type : 'info';
+          return '<div class="it"><span class="dot '+type+'"></span><span>'+esc(it.text||'')+'</span></div>';
+        }).join('');
+        box.innerHTML = html;
+        box.className = 'info show';
+      })
+      .catch(function(){ /* offline / gagal ambil — diamkan saja, kotak tidak muncul */ });
+  }
+
+  applyTheme();
+  render();
+  loadInfo();
+</script>
+</body>
+</html>

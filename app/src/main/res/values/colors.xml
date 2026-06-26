@@ -1,0 +1,8 @@
+<resources>
+    <!-- Main accent color (loading bar, refresh spinner, splash logo tint) -->
+    <color name="accent">#4F46E5</color>
+    <!-- App background / splash background -->
+    <color name="bg">#0E0E16</color>
+    <color name="bg_light">#13131A</color>
+    <color name="white">#FFFFFF</color>
+</resources>

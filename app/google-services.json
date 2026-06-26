@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1076613776345",
+    "project_id": "playgame-notif",
+    "storage_bucket": "playgame-notif.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1076613776345:android:f15d92f80b05860a89cfc8",
+        "android_client_info": {
+          "package_name": "com.simple.webapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFxhWdZ1ULqJbbKvA5rmo7xHaUSjTMvd4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

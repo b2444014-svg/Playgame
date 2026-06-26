@@ -1,0 +1,8 @@
+{
+  "show": true,
+  "title": "Informasi",
+  "items": [
+    { "text": "Bonus harian sudah dibagikan ✅", "type": "success" },
+    { "text": "Top up aktif 24 jam nonstop ⚡", "type": "info" }
+  ]
+}

@@ -1,0 +1,4 @@
+<resources>
+    <!-- Nama aplikasi (muncul di bawah icon HP). Ganti sesukamu. -->
+    <string name="app_name">Play Game</string>
+</resources>

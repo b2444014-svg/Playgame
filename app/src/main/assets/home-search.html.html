@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>Top Up Game</title>
+<script src="sites.js"></script>
+<style>
+  :root{
+    --bg:#06060f; --c1:#7c3aed; --c2:#06b6d4; --c3:#f43f5e; --lime:#a3e635;
+    --txt:#f5f5ff; --muted:#8b8ba7; --gold:#fbbf24;
+    --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--txt);
+    overflow-x:hidden; position:relative; min-height:100vh;
+    padding:max(26px,env(safe-area-inset-top)) 16px 40px;
+  }
+  /* tech grid + glow blobs */
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(124,58,237,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.06) 1px,transparent 1px);
+    background-size:34px 34px;mask-image:radial-gradient(circle at 50% 30%,#000,transparent 80%)}
+  .blob{position:fixed;border-radius:50%;filter:blur(72px);opacity:.5;z-index:0;pointer-events:none}
+  .b1{width:300px;height:300px;background:var(--c1);top:-100px;left:-70px;animation:f1 14s ease-in-out infinite}
+  .b2{width:280px;height:280px;background:var(--c2);bottom:30px;right:-90px;animation:f2 16s ease-in-out infinite}
+  .b3{width:220px;height:220px;background:var(--c3);top:36%;left:55%;animation:f3 12s ease-in-out infinite}
+  @keyframes f1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
+  @keyframes f2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-40px)}}
+  @keyframes f3{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-40%,30px)}}
+
+  .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto}
+  .logo{text-align:center;margin:14px 0 24px}
+  .logo .badge{display:inline-flex;align-items:center;gap:9px;padding:9px 18px;border-radius:14px;
+    background:var(--card);border:1px solid var(--line);backdrop-filter:blur(10px);
+    box-shadow:0 0 30px rgba(124,58,237,.25)}
+  .logo .badge img{height:46px;width:auto;display:block;border-radius:10px}
+  .logo .gp{font-size:18px;filter:drop-shadow(0 0 8px var(--c2))}
+  .logo h1{font-size:16px;font-weight:800;letter-spacing:1.5px;
+    background:linear-gradient(90deg,var(--c2),var(--lime));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .tagline{text-align:center;color:var(--muted);font-size:13px;margin-top:13px}
+  .tagline b{color:var(--txt)}
+
+  .search{position:relative;margin:20px 0 8px}
+  .search .ring{position:absolute;inset:-2px;border-radius:18px;z-index:0;
+    background:linear-gradient(135deg,var(--c1),var(--c2),var(--lime));opacity:0;filter:blur(9px);transition:opacity .3s}
+  .search.focus .ring{opacity:.95}
+  .search .box{position:relative;z-index:1;display:flex;align-items:center;gap:12px;
+    background:#0d0d1c;border:1px solid var(--line);border-radius:16px;padding:15px 17px;transition:border-color .3s}
+  .search.focus .box{border-color:transparent}
+  .search svg{flex:none;opacity:.85}
+  .search input{flex:1;background:none;border:none;outline:none;color:var(--txt);font-size:16px;font-weight:500}
+  .search input::placeholder{color:var(--muted)}
+  .clear{display:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px}
+
+  .noresult{padding:14px;color:var(--muted);font-size:14px;text-align:center}
+
+  .tabs{display:flex;gap:7px;margin:24px 0 16px}
+  .tab{flex:1;text-align:center;padding:11px 4px;border-radius:13px;cursor:pointer;font-size:13px;font-weight:700;
+    color:var(--muted);background:var(--card);border:1px solid var(--line);transition:.2s}
+  .tab.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 0 20px rgba(6,182,212,.35)}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{position:relative;overflow:hidden;cursor:pointer;padding:15px;border-radius:16px;
+    background:var(--card);border:1px solid var(--line);backdrop-filter:blur(8px);transition:transform .14s,border-color .2s,box-shadow .2s}
+  .card:active{transform:scale(.97)}
+  .card:hover{border-color:rgba(6,182,212,.5);box-shadow:0 0 22px rgba(6,182,212,.2)}
+  .card::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--c2),var(--lime));opacity:.9}
+  .card .star{position:absolute;top:7px;right:7px;font-size:22px;line-height:1;color:rgba(255,255,255,.35);padding:5px;z-index:2}
+  .card .star.on{color:var(--gold);text-shadow:0 0 10px rgba(251,191,36,.6)}
+  .card .av{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:#fff;margin-bottom:11px;margin-top:2px;background-size:cover;background-position:center}
+  .card .nm{font-weight:800;font-size:15px;margin-bottom:5px;padding-right:22px;line-height:1.2}
+  .card .ct{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.4px;color:var(--c2);
+    background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);padding:3px 8px;border-radius:7px;text-transform:uppercase}
+  .prem{position:absolute;top:0;left:0;font-size:9px;font-weight:800;letter-spacing:.5px;color:#1a1a2e;
+    background:linear-gradient(90deg,var(--gold),#f59e0b);padding:3px 10px 3px 8px;border-bottom-right-radius:10px;z-index:2}
+
+  .hist .hrow{display:flex;align-items:center;gap:13px;cursor:pointer;padding:12px 14px;border-radius:14px;margin-bottom:9px;
+    background:var(--card);border:1px solid var(--line);transition:transform .12s}
+  .hist .hrow:active{transform:scale(.98)}
+  .hist .av{width:42px;height:42px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background-size:cover;background-position:center}
+  .hist .nm{font-weight:700;font-size:15px}
+  .hist .tm{font-size:12px;color:var(--muted)}
+  .hist .star{margin-left:auto;font-size:20px;color:var(--muted);padding:4px 6px}
+  .hist .star.on{color:var(--gold)}
+  .clearhist{display:block;width:100%;margin-top:6px;cursor:pointer;padding:13px;border:1px dashed var(--line);border-radius:14px;background:none;color:var(--muted);font-size:14px;font-weight:600}
+  .empty{grid-column:1/-1;width:100%;text-align:center;color:var(--muted);padding:30px 20px;min-height:48vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .empty .ic{font-size:42px;margin-bottom:12px}
+  .empty p{font-size:14px;line-height:1.5}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="wrap">
+    <div class="logo">
+      <div class="badge" id="logoBadge"><span class="gp">🎮</span><h1 id="appName">PLAY GAME</h1></div>
+      <div class="tagline">Cari website-mu, lalu <b>LOGIN</b> untuk Mendapatkan JP hari ini</div>
+    </div>
+
+    <div class="search" id="search">
+      <div class="ring"></div>
+      <div class="box">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="q" type="text" placeholder="Cari game..." autocomplete="off">
+        <span class="clear" id="clearBtn">&times;</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" id="tabHome" onclick="setTab('home')">🔎 Cari</div>
+      <div class="tab" id="tabFav" onclick="setTab('fav')">⭐ Favorit</div>
+      <div class="tab" id="tabHist" onclick="setTab('hist')">🕘 Riwayat</div>
+    </div>
+
+    <div id="viewHome"><div class="grid" id="grid"></div></div>
+    <div id="viewFav" class="hidden"></div>
+    <div id="viewHist" class="hist hidden"></div>
+  </div>
+
+<script>
+  var SITES = window.SITES || [];
+  /* === Pengaturan tampilan (diisi dari sites.js) === */
+  var LOGO_URL = window.LOGO_URL || '';
+  var BG_URL   = window.BG_URL   || '';
+  var APP_NAME = window.APP_NAME || 'TOP UP GAME';
+  var MIN_SEARCH = 4;   /* jumlah huruf minimal sebelum hasil muncul */
+
+  var PALETTE = [['#6d28d9','#a855f7'],['#0891b2','#06b6d4'],['#db2777','#ec4899'],
+                 ['#ea580c','#f59e0b'],['#16a34a','#22c55e'],['#2563eb','#3b82f6'],
+                 ['#dc2626','#ef4444'],['#7c3aed','#c026d3']];
+  var currentTab='home';
+
+  function avStyle(s){
+    if(s.image) return 'background-image:url(\''+s.image+'\')';
+    if(s.color) return 'background:linear-gradient(135deg,'+s.color+','+s.color+')';
+    var h=0; for(var i=0;i<s.name.length;i++) h=s.name.charCodeAt(i)+((h<<5)-h);
+    var p=PALETTE[Math.abs(h)%PALETTE.length];
+    return 'background:linear-gradient(135deg,'+p[0]+','+p[1]+')';
+  }
+  function avText(s){ return s.image ? '' : (s.name.trim()[0]||'?').toUpperCase(); }
+  function esc(t){ return (t||'').replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}); }
+  function premBadge(s){ return s.premium ? '<div class="prem">★ PREMIUM</div>' : ''; }
+
+  /* cocokkan jika teks yang diketik adalah awal dari nama atau salah satu kata di nama game */
+  function matchName(name, t){
+    if(!t) return false;
+    name = (name||'').toLowerCase();
+    if(name.indexOf(t)===0) return true;
+    var words = name.split(/\s+/);
+    for(var i=0;i<words.length;i++){ if(words[i].indexOf(t)===0) return true; }
+    return false;
+  }
+
+  /* === Terapkan logo & background dari link Imgbb === */
+  function applyTheme(){
+    if(BG_URL){
+      document.body.style.backgroundImage = "linear-gradient(rgba(6,6,15,.88),rgba(6,6,15,.88)), url('"+BG_URL+"')";
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      document.body.style.backgroundAttachment = "fixed";
+      document.body.style.backgroundRepeat = "no-repeat";
+      document.body.style.backgroundColor = "#06060f";
+    }
+    var badge=document.getElementById('logoBadge');
+    if(LOGO_URL){
+      badge.innerHTML = '<img src="'+LOGO_URL+'" alt="logo">';
+    } else {
+      badge.innerHTML = '<span class="gp">🎮</span><h1>'+esc(APP_NAME)+'</h1>';
+    }
+  }
+
+  function openSite(s){
+    addHistory(s);
+    if(window.AndroidApp && AndroidApp.open){ AndroidApp.open(s.url); }
+    else { location.href = s.url; }
+  }
+
+  /* history */
+  function getHistory(){ try{ return JSON.parse(localStorage.getItem('history')||'[]'); }catch(e){ return []; } }
+  function addHistory(s){
+    var h=getHistory().filter(function(x){return x.url!==s.url;});
+    h.unshift({name:s.name,url:s.url,category:s.category||'',color:s.color||'',image:s.image||'',premium:!!s.premium,time:Date.now()});
+    if(h.length>40) h=h.slice(0,40);
+    localStorage.setItem('history',JSON.stringify(h));
+  }
+  function clearHistory(){ localStorage.removeItem('history'); renderHistory(); }
+  function timeAgo(t){
+    var d=Math.floor((Date.now()-t)/1000);
+    if(d<60) return 'baru saja';
+    if(d<3600) return Math.floor(d/60)+' menit lalu';
+    if(d<86400) return Math.floor(d/3600)+' jam lalu';
+    return Math.floor(d/86400)+' hari lalu';
+  }
+
+  /* favorites */
+  function getFav(){ try{ return JSON.parse(localStorage.getItem('favorites')||'[]'); }catch(e){ return []; } }
+  function isFav(url){ return getFav().some(function(x){return x.url===url;}); }
+  function toggleFav(s){
+    var f=getFav();
+    if(isFav(s.url)){ f=f.filter(function(x){return x.url!==s.url;}); }
+    else { f.unshift({name:s.name,url:s.url,category:s.category||'',color:s.color||'',image:s.image||'',premium:!!s.premium}); }
+    localStorage.setItem('favorites',JSON.stringify(f));
+    refreshAll();
+  }
+  function refreshAll(){
+    renderHome(); renderFav();
+    if(currentTab==='hist') renderHistory();
+  }
+  function starHTML(url, expr){
+    var on=isFav(url);
+    return '<div class="star'+(on?' on':'')+'" onclick="event.stopPropagation();toggleFav('+expr+')">'+(on?'★':'☆')+'</div>';
+  }
+
+  function cardHTML(s, expr){
+    return '<div class="card" onclick="openSite('+expr+')">'+
+      premBadge(s)+ starHTML(s.url,expr)+
+      '<div class="av" style="'+avStyle(s)+'">'+avText(s)+'</div>'+
+      '<div class="nm">'+esc(s.name)+'</div>'+
+      '<div class="ct">'+esc(s.category||'Game')+'</div></div>';
+  }
+
+  /* === Halaman utama: kosong di awal, isi setelah cari === */
+  function renderHome(){
+    var g=document.getElementById('grid');
+    var t=(q.value||'').trim().toLowerCase();
+    if(!t){
+      g.innerHTML='<div class="empty"><div class="ic">🔎</div><p>Ketik nama game di kolom pencarian di atas untuk mulai mencari.</p></div>';
+      return;
+    }
+    if(t.length < MIN_SEARCH){
+      g.innerHTML='<div class="empty"><div class="ic">⌨️</div><p>Ketik minimal '+MIN_SEARCH+' huruf nama game untuk menampilkan hasil.</p></div>';
+      return;
+    }
+    if(!SITES.length){
+      g.innerHTML='<div class="empty"><div class="ic">🕹️</div><p>Belum ada game.<br>Tambahkan di file <b>sites.js</b></p></div>';
+      return;
+    }
+    var m=SITES.filter(function(s){
+      return matchName(s.name, t);
+    });
+    if(!m.length){
+      g.innerHTML='<div class="empty"><div class="ic">😕</div><p>Game "'+esc(q.value)+'" tidak ditemukan.</p></div>';
+      return;
+    }
+    g.innerHTML = m.map(function(s){ var i=SITES.indexOf(s); return cardHTML(s,'SITES['+i+']'); }).join('');
+  }
+  function renderFav(){
+    var v=document.getElementById('viewFav');
+    var f=getFav();
+    if(!f.length){ v.innerHTML='<div class="empty"><div class="ic">⭐</div><p>Belum ada favorit.<br>Tap bintang di kartu game untuk menyimpan.</p></div>'; return; }
+    v.innerHTML = '<div class="grid">'+f.map(function(s,i){ return cardHTML(s,'getFav()['+i+']'); }).join('')+'</div>';
+  }
+  function renderHistory(){
+    var v=document.getElementById('viewHist');
+    var h=getHistory();
+    if(!h.length){ v.innerHTML='<div class="empty"><div class="ic">🕘</div><p>Belum ada riwayat.<br>Game yang kamu buka akan muncul di sini.</p></div>'; return; }
+    v.innerHTML = h.map(function(s,i){
+      return '<div class="hrow" onclick="openSite(getHistory()['+i+'])">'+
+        '<div class="av" style="'+avStyle(s)+'">'+avText(s)+'</div>'+
+        '<div style="flex:1"><div class="nm">'+esc(s.name)+'</div><div class="tm">'+timeAgo(s.time)+'</div></div>'+
+        starHTML(s.url,'getHistory()['+i+']')+'</div>';
+    }).join('') + '<button class="clearhist" onclick="clearHistory()">🗑️ Hapus semua riwayat</button>';
+  }
+
+  /* search */
+  var q=document.getElementById('q'),
+      sb=document.getElementById('search'), cb=document.getElementById('clearBtn');
+  function doSearch(){
+    var t=q.value.trim();
+    cb.style.display = t ? 'block' : 'none';
+    if(currentTab!=='home'){ setTab('home'); }
+    else { renderHome(); }
+  }
+  q.addEventListener('input',doSearch);
+  q.addEventListener('focus',function(){ sb.classList.add('focus'); });
+  q.addEventListener('blur',function(){ sb.classList.remove('focus'); });
+  q.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      var t=q.value.trim().toLowerCase();
+      if(t.length < MIN_SEARCH) return;
+      var m=SITES.filter(function(s){return matchName(s.name, t);});
+      if(m.length){ openSite(m[0]); }
+    }
+  });
+  cb.addEventListener('click',function(){ q.value=''; doSearch(); q.focus(); });
+
+  function setTab(which){
+    currentTab=which;
+    document.getElementById('tabHome').classList.toggle('active',which==='home');
+    document.getElementById('tabFav').classList.toggle('active',which==='fav');
+    document.getElementById('tabHist').classList.toggle('active',which==='hist');
+    document.getElementById('viewHome').classList.toggle('hidden',which!=='home');
+    document.getElementById('viewFav').classList.toggle('hidden',which!=='fav');
+    document.getElementById('viewHist').classList.toggle('hidden',which!=='hist');
+    if(which==='home') renderHome();
+    if(which==='fav') renderFav();
+    if(which==='hist') renderHistory();
+  }
+
+  applyTheme();
+  renderHome(); renderFav(); renderHistory();
+</script>
+</body>
+</html>
