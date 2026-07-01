@@ -12,7 +12,8 @@ jobs:
           java-version: '17'
 
       - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/playgame.keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | grep -v "CERTIFICATE" | tr -d '\r\n ' | base64 -d > app/playgame.keystore
 
       - uses: gradle/actions/setup-gradle@v4
         with:
