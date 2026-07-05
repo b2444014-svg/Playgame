@@ -1,32 +1,40 @@
 name: Build APK
 on: [push, workflow_dispatch]
+
+# izin agar workflow boleh membuat/memperbarui Release
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Decode keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | grep -v "CERTIFICATE" | tr -d '\r\n ' | base64 -d > app/playgame.keystore
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-
       - name: Build signed release APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: gradle assembleRelease --no-daemon --stacktrace
-
       - uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: app/build/outputs/apk/release/app-release.apk
+
+      # LANGKAH BARU: publish APK ke Release v1.0 (link member tetap sama, otomatis ter-update)
+      - name: Publish to Release v1.0
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0
+          name: NABUNG77 APK
+          files: app/build/outputs/apk/release/app-release.apk
