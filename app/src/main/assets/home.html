@@ -190,5 +190,61 @@
   render();
   loadInfo();
 </script>
+
+<!-- ============================================================
+     STATISTIK (lapor ke worker) — BLOK TAMBAHAN, TERPISAH.
+     Tidak mengubah tampilan / tombol / notif / box event & pesan.
+     Aman: kalau gagal atau worker mati, app tetap jalan normal.
+     Hemat kuota: lapor tiap 5 menit, HANYA saat app di layar.
+     ============================================================ -->
+<script>
+(function(){
+  try{
+    // ambil alamat worker dari INFO_URL (buang bagian "/info")
+    var STATS_BASE = (window.INFO_URL || '').replace(/\/info.*$/, '');
+    if(!STATS_BASE) return;  // tidak ada URL worker → diam, tidak melakukan apa-apa
+
+    // device id permanen per HP (untuk hitung HP unik = download)
+    var DID = null;
+    try{
+      DID = localStorage.getItem('nb_did');
+      if(!DID){
+        DID = 'd-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
+        localStorage.setItem('nb_did', DID);
+      }
+    }catch(e){ return; }  // localStorage tidak tersedia → batalkan, app tetap normal
+
+    function report(path){
+      try{
+        fetch(STATS_BASE + path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ device_id: DID }),
+          cache: 'no-store',
+          keepalive: true
+        }).catch(function(){});
+      }catch(e){}
+    }
+
+    var timer = null;
+    function startPing(pingNow){
+      if(timer) return;
+      if(pingNow) report('/ping');
+      timer = setInterval(function(){ report('/ping'); }, 5 * 60 * 1000); // 5 menit
+    }
+    function stopPing(){
+      if(timer){ clearInterval(timer); timer = null; }
+    }
+
+    report('/register');   // daftar / tandai aktif sekali saat app dibuka
+    startPing(false);      // mulai lapor berkala (tanpa ping ganda di awal)
+
+    // hemat kuota: berhenti saat app di background, lanjut saat kembali ke depan
+    document.addEventListener('visibilitychange', function(){
+      if(document.hidden) stopPing(); else startPing(true);
+    });
+  }catch(e){ /* apa pun yang terjadi, app tetap jalan normal */ }
+})();
+</script>
 </body>
 </html>
