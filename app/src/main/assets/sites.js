@@ -3,7 +3,7 @@
    (kosongkan dengan "" jika mau pakai tampilan default)
    ======================================================= */
 
-window.LOGO_URL = "https://i.ibb.co/Y446WRjk/nabung77-LOGO-APK.jpg";
+window.LOGO_URL = "https://res.cloudinary.com/xbdujq1q/image/upload/v1784994627/ICON_APK_NABUNG_BARU_lsfkl2.jpg";
 window.BG_URL   = "https://i.ibb.co/Txx3QDGR/background-apk-nabung.jpg";
 window.APP_NAME = "NABUNG77";
 
@@ -24,7 +24,7 @@ window.SITES = [
   {
     name: "NABUNG77",
     category: "SLOT",
-    image: "https://i.ibb.co/Y446WRjk/nabung77-LOGO-APK.jpg",
+    image: "https://res.cloudinary.com/xbdujq1q/image/upload/v1784994627/ICON_APK_NABUNG_BARU_lsfkl2.jpg",
     url: "https://cutt.ly/nabung77seobambu",
     premium: true
   },
